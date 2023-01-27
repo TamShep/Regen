@@ -1,24 +1,4 @@
-/*
- *  Regen - A plug-in for Spigot/Bukkit based Minecraft servers.
- *  Copyright (C) 2020  ElgarL
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.opencommunity.regen.serialize.extensions;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -27,137 +7,138 @@ import org.bukkit.entity.Pose;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
-
 import org.opencommunity.regen.serialize.SerializedEntity;
 import org.opencommunity.regen.serialize.SerializedObject;
 
-/**
- * @author ElgarL
- *
- */
+import java.util.HashMap;
+import java.util.Map;
+
+
 public class ExtendEntityArmorStand extends SerializedEntity {
 
-	Map<String, Object> poses = new HashMap<String, Object>();
-	ItemStack mainHand = null;
-	ItemStack offHand = null;
+    Map<String, Object> poses = new HashMap<String, Object>();
+    ItemStack mainHand = null;
+    ItemStack offHand = null;
 
-	public ExtendEntityArmorStand () {}
-	/**
-	 * Constructor to create a ExtendEntityArmorStand from an Entity.
-	 * 
-	 * @param <T>		extends Entity
-	 * @param entity	the Entity to store.
-	 */
-	public <T extends Entity> ExtendEntityArmorStand (T entity) {
+    public ExtendEntityArmorStand() {
+    }
 
-		super(entity);
+    /**
+     * Constructor to create a ExtendEntityArmorStand from an Entity.
+     *
+     * @param <T>    extends Entity
+     * @param entity the Entity to store.
+     */
+    public <T extends Entity> ExtendEntityArmorStand(T entity) {
 
-		ArmorStand stand = (ArmorStand) entity;
+        super(entity);
 
-		if (stand.getPose() != Pose.STANDING) {
+        ArmorStand stand = (ArmorStand) entity;
 
-			poses.put("body", toVector(stand.getBodyPose()));
-			poses.put("head", toVector(stand.getHeadPose()));
-			poses.put("leftarm", toVector(stand.getLeftArmPose()));
-			poses.put("leftleg", toVector(stand.getLeftLegPose()));
-			poses.put("rightarm", toVector(stand.getRightArmPose()));
-			poses.put("rightleg", toVector(stand.getRightLegPose()));
-		}
+        if (stand.getPose() != Pose.STANDING) {
 
-		if (stand.getEquipment() != null) {
+            poses.put("body", toVector(stand.getBodyPose()));
+            poses.put("head", toVector(stand.getHeadPose()));
+            poses.put("leftarm", toVector(stand.getLeftArmPose()));
+            poses.put("leftleg", toVector(stand.getLeftLegPose()));
+            poses.put("rightarm", toVector(stand.getRightArmPose()));
+            poses.put("rightleg", toVector(stand.getRightLegPose()));
+        }
 
-			mainHand = stand.getEquipment().getItemInMainHand();
-			offHand = stand.getEquipment().getItemInOffHand();
+        if (stand.getEquipment() != null) {
 
-			int count = 0;
-			for (ItemStack itemStack : stand.getEquipment().getArmorContents()) {
-				if (itemStack != null) {
-					this.items.add(itemStack);
-					if (itemStack.getType() == Material.AIR) count++;
-				}
-			}
-			/*
-			 * If we only added AIR we have no inventory.
-			 */
-			if (count == this.items.size())
-				this.items.clear();
-		}
-	}
+            mainHand = stand.getEquipment().getItemInMainHand();
+            offHand = stand.getEquipment().getItemInOffHand();
 
-	@Override
-	public Entity regen() {
+            int count = 0;
+            for (ItemStack itemStack : stand.getEquipment().getArmorContents()) {
+                if (itemStack != null) {
+                    this.items.add(itemStack);
+                    if (itemStack.getType() == Material.AIR) count++;
+                }
+            }
+            /*
+             * If we only added AIR we have no inventory.
+             */
+            if (count == this.items.size())
+                this.items.clear();
+        }
+    }
 
-		ArmorStand spawn = null;
+    @Override
+    public Entity regen() {
 
-		try {
-			spawn = (ArmorStand) super.regen();
+        ArmorStand spawn = null;
 
-			if (hasInventory())
-				spawn.getEquipment().setArmorContents(getInventory());
+        try {
+            spawn = (ArmorStand) super.regen();
 
-			if (!poses.isEmpty()) {
-				spawn.setBodyPose(toEulerAngle((Vector) poses.get("body")));
-				spawn.setHeadPose(toEulerAngle((Vector) poses.get("head")));
-				spawn.setLeftArmPose(toEulerAngle((Vector) poses.get("leftarm")));
-				spawn.setLeftLegPose(toEulerAngle((Vector) poses.get("leftleg")));
-				spawn.setRightArmPose(toEulerAngle((Vector) poses.get("rightarm")));
-				spawn.setRightLegPose(toEulerAngle((Vector) poses.get("rightleg")));
-			}
+            if (hasInventory())
+                spawn.getEquipment().setArmorContents(getInventory());
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return spawn;
-	}
+            if (!poses.isEmpty()) {
+                spawn.setBodyPose(toEulerAngle((Vector) poses.get("body")));
+                spawn.setHeadPose(toEulerAngle((Vector) poses.get("head")));
+                spawn.setLeftArmPose(toEulerAngle((Vector) poses.get("leftarm")));
+                spawn.setLeftLegPose(toEulerAngle((Vector) poses.get("leftleg")));
+                spawn.setRightArmPose(toEulerAngle((Vector) poses.get("rightarm")));
+                spawn.setRightLegPose(toEulerAngle((Vector) poses.get("rightleg")));
+            }
 
-	@Override
-	public ExtendEntityArmorStand clone() {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return spawn;
+    }
 
-		ExtendEntityArmorStand clone = null;
+    @Override
+    public ExtendEntityArmorStand clone() {
 
-		clone = (ExtendEntityArmorStand) super.clone();
-		clone.poses.putAll(this.poses);
-		clone.mainHand = this.mainHand.clone();
-		clone.offHand = this.offHand.clone();
+        ExtendEntityArmorStand clone = null;
 
-		return clone;
-	}
+        clone = (ExtendEntityArmorStand) super.clone();
+        clone.poses.putAll(this.poses);
+        clone.mainHand = this.mainHand.clone();
+        clone.offHand = this.offHand.clone();
 
-	@Override
-	public Map<String, Object> serialize() {
+        return clone;
+    }
 
-		Map<String, Object> result = super.serialize();
+    @Override
+    public Map<String, Object> serialize() {
 
-		if (mainHand != null && mainHand.getType() != Material.AIR) result.put("mainhand", mainHand.serialize());
-		if (offHand != null && offHand.getType() != Material.AIR) result.put("offhand", offHand.serialize());
+        Map<String, Object> result = super.serialize();
 
-		if (!poses.isEmpty()) result.put("pose", poses);
+        if (mainHand != null && mainHand.getType() != Material.AIR) result.put("mainhand", mainHand.serialize());
+        if (offHand != null && offHand.getType() != Material.AIR) result.put("offhand", offHand.serialize());
 
-		return result;
-	}
+        if (!poses.isEmpty()) result.put("pose", poses);
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
+        return result;
+    }
 
-		super.deserialize(map);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
 
-		if (map.containsKey("pose")) this.poses = (castToMap(map.get("pose")));
+        super.deserialize(map);
 
-		if (map.containsKey("mainhand")) this.mainHand = ItemStack.deserialize(castToMap(map.get("mainhand")));
-		if (map.containsKey("offhand")) this.offHand = ItemStack.deserialize(castToMap(map.get("offhand")));
+        if (map.containsKey("pose")) this.poses = (castToMap(map.get("pose")));
 
-		return (Z) this;
-	}
+        if (map.containsKey("mainhand")) this.mainHand = ItemStack.deserialize(castToMap(map.get("mainhand")));
+        if (map.containsKey("offhand")) this.offHand = ItemStack.deserialize(castToMap(map.get("offhand")));
 
-	private Vector toVector(EulerAngle data) {
+        return (Z) this;
+    }
 
-		return new Vector(data.getX(), data.getY(), data.getZ());
-	}
+    private Vector toVector(EulerAngle data) {
 
-	private EulerAngle toEulerAngle(Vector data) {
+        return new Vector(data.getX(), data.getY(), data.getZ());
+    }
 
-		return new EulerAngle(data.getX(), data.getY(), data.getZ());
-	}
+    private EulerAngle toEulerAngle(Vector data) {
+
+        return new EulerAngle(data.getX(), data.getY(), data.getZ());
+    }
 
 }

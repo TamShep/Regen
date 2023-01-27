@@ -1,114 +1,96 @@
-/*
- *  Regen - A plug-in for Spigot/Bukkit based Minecraft servers.
- *  Copyright (C) 2020  ElgarL
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.opencommunity.regen.serialize;
-
-import java.util.Map;
 
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 
-/**
- * @author ElgarL
- *
- */
+import java.util.Map;
+
+
 public class SerializedEntity extends SerializedObject {
 
-	protected EntityType type = null;
-	protected BlockFace facing = null;
-	protected String customName = null;
+    protected EntityType type = null;
+    protected BlockFace facing = null;
+    protected String customName = null;
 
-	public SerializedEntity() {}
-	/**
-	 * Constructor to create a SerializedEntity from an Entity.
-	 * 
-	 * @param <T>		extends Entity.
-	 * @param entity	the Entity to store.
-	 */
-	public <T extends Entity> SerializedEntity(T entity) {
+    public SerializedEntity() {
+    }
 
-		this.loc = entity.getLocation();
+    /**
+     * Constructor to create a SerializedEntity from an Entity.
+     *
+     * @param <T>    extends Entity.
+     * @param entity the Entity to store.
+     */
+    public <T extends Entity> SerializedEntity(T entity) {
 
-		this.type = entity.getType();
-		this.facing = entity.getFacing();
-		this.customName = entity.getCustomName();
-	}
+        this.loc = entity.getLocation();
 
-	@Override
-	public Entity regen() {
+        this.type = entity.getType();
+        this.facing = entity.getFacing();
+        this.customName = entity.getCustomName();
+    }
 
-		Entity spawn = null;
+    @Override
+    public Entity regen() {
 
-		try {
-			spawn = this.loc.getWorld().spawnEntity(loc, type);
-			spawn.setCustomName(customName);
+        Entity spawn = null;
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        try {
+            spawn = this.loc.getWorld().spawnEntity(loc, type);
+            spawn.setCustomName(customName);
 
-		return spawn;
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-	@Override
-	public SerializedEntity clone() {
+        return spawn;
+    }
 
-		SerializedEntity clone = null;
+    @Override
+    public SerializedEntity clone() {
 
-		clone = (SerializedEntity) super.clone();
-		clone.type = this.type;
-		clone.facing = this.facing;
-		clone.customName = this.customName;
+        SerializedEntity clone = null;
 
-		return clone;
-	}
+        clone = (SerializedEntity) super.clone();
+        clone.type = this.type;
+        clone.facing = this.facing;
+        clone.customName = this.customName;
 
-	@Override
-	public Map<String, Object> serialize() {
+        return clone;
+    }
 
-		Map<String, Object> result = super.serialize();
+    @Override
+    public Map<String, Object> serialize() {
 
-		result.put("type", type.name());
-		if (facing != null) result.put("facing", facing.name());
-		if (customName != null) result.put("name", customName);
+        Map<String, Object> result = super.serialize();
 
-		return result;
-	}
+        result.put("type", type.name());
+        if (facing != null) result.put("facing", facing.name());
+        if (customName != null) result.put("name", customName);
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <Z extends SerializedObject> Z  deserialize(Map<?, ?> map) {
+        return result;
+    }
 
-		SerializedEntity result = super.deserialize(map);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
 
-		result.type = EntityType.valueOf((String) map.get("type"));
-		if (map.containsKey("facing")) this.facing = BlockFace.valueOf((String) map.get("facing"));
-		if (map.containsKey("name")) this.customName = (String) map.get("name");
+        SerializedEntity result = super.deserialize(map);
 
-		return (Z) result;
-	}
+        result.type = EntityType.valueOf((String) map.get("type"));
+        if (map.containsKey("facing")) this.facing = BlockFace.valueOf((String) map.get("facing"));
+        if (map.containsKey("name")) this.customName = (String) map.get("name");
 
-	/**
-	 * @return the type
-	 */
-	public EntityType getType() {
+        return (Z) result;
+    }
 
-		return type;
-	}
+    /**
+     * @return the type
+     */
+    public EntityType getType() {
+
+        return type;
+    }
 
 }

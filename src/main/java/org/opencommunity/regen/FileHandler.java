@@ -1,25 +1,4 @@
-/*
- *  Regen - A plug-in for Spigot/Bukkit based Minecraft servers.
- *  Copyright (C) 2020  ElgarL
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.opencommunity.regen;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -27,267 +6,272 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
-
 import org.opencommunity.regen.serialize.SerializedBlock;
 import org.opencommunity.regen.serialize.utils.BlockUtils;
 import org.opencommunity.regen.serialize.utils.EntityUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Handles saving, loading, decoding
  * and processing of data in preparation
  * of regeneration.
- * 
- * @author ElgarL
  *
+ * @author ElgarL
  */
 public class FileHandler {
 
-	private final File blockSourceFolder;
-	private final File entitySourceFolder;
-	private final Regen plugin;
+    private final File blockSourceFolder;
+    private final File entitySourceFolder;
+    private final Regen plugin;
+    private final Object decodeLock = new Object();
+    private final Object fileLock = new Object();
+    private FileConfiguration config;
+
+    /**
+     * Constructor for the FileHandler.
+     *
+     * @param plugin Regen instance.
+     */
+    public FileHandler(Regen plugin) {
 
-	private FileConfiguration config;
+        this.plugin = plugin;
 
-	/**
-	 * Constructor for the FileHandler.
-	 * 
-	 * @param plugin	Regen instance.
-	 */
-	public FileHandler(Regen plugin) {
+        blockSourceFolder = new File(plugin.getDataFolder() + File.separator + "blocks");
+        if (!blockSourceFolder.exists())
+            blockSourceFolder.mkdirs();
 
-		this.plugin = plugin;
+        entitySourceFolder = new File(plugin.getDataFolder() + File.separator + "entities");
+        if (!entitySourceFolder.exists())
+            entitySourceFolder.mkdirs();
+    }
 
-		blockSourceFolder = new File(plugin.getDataFolder() + File.separator + "blocks");
-		if (!blockSourceFolder.exists())
-			blockSourceFolder.mkdirs();
+    public void loadConfig() {
 
-		entitySourceFolder = new File(plugin.getDataFolder() + File.separator + "entities");
-		if (!entitySourceFolder.exists())
-			entitySourceFolder.mkdirs();
-	}
+        plugin.saveDefaultConfig();
+        /*
+         * Ensure we load the config clean in case of a reload.
+         */
+        plugin.reloadConfig();
+        config = plugin.getConfig();
+    }
 
-	public void loadConfig() {
+    public Long getDelay() {
 
-		plugin.saveDefaultConfig();
-		/*
-		 * Ensure we load the config clean in case of a reload.
-		 */
-		plugin.reloadConfig();
-		config = plugin.getConfig();
-	}
+        return config.getLong("delay", 10L);
+    }
 
-	public Long getDelay() {
+    public Long getFrequency() {
 
-		return config.getLong("delay", 10L);
-	}
+        return config.getLong("frequency", 5L);
+    }
 
-	public Long getFrequency() {
+    /**
+     * Attempt to serialize an Entity and save to file.
+     * Pass the serialized data to be regenerated.
+     *
+     * @param <T>    extends Entity
+     * @param entity the Entity to process.
+     */
+    public <T extends Entity> void saveEntity(final T entity) {
 
-		return config.getLong("frequency", 5L);
-	}
+        YamlConfiguration data = new YamlConfiguration();
+        String uid = UUID.randomUUID().toString();
 
-	/**
-	 * Attempt to serialize an Entity and save to file.
-	 * Pass the serialized data to be regenerated.
-	 * 
-	 * @param <T>		extends Entity
-	 * @param entity	the Entity to process.
-	 */
-	public <T extends Entity> void saveEntity(final T entity) {
+        data.createSection(uid, EntityUtils.serializeByType(entity));
 
-		YamlConfiguration data = new YamlConfiguration();
-		String uid = UUID.randomUUID().toString();
+        File file = new File(entitySourceFolder, uid + ".yml");
+        saveData(data, file);
 
-		data.createSection(uid, EntityUtils.serializeByType(entity));
+        // Schedule a regen.
 
-		File file = new File(entitySourceFolder, uid + ".yml");
-		saveData(data, file);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+            decodeEntityData(data);
+        }, getDelay() * 20);
+    }
 
-		// Schedule a regen.
+    /**
+     * Attempt to serialize a List of Blocks and save to file.
+     * Pass the serialized data to be regenerated.
+     *
+     * @param <T>    extends Block
+     * @param blocks the Blocks to process.
+     */
+    public <T extends Block> void saveBlocks(final List<T> blocks) {
 
-		Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> { decodeEntityData(data); }, getDelay() * 20);
-	}
+        if (blocks == null || blocks.isEmpty()) return;
 
-	/**
-	 * Attempt to serialize a List of Blocks and save to file.
-	 * Pass the serialized data to be regenerated.
-	 * 
-	 * @param <T>		extends Block
-	 * @param blocks	the Blocks to process.
-	 */
-	public <T extends Block> void saveBlocks(final List<T> blocks) {
+        YamlConfiguration data = new YamlConfiguration();
+        List<Map<String, Object>> explosion = new ArrayList<Map<String, Object>>();
 
-		if (blocks == null || blocks.isEmpty()) return;
+        blocks.forEach(block -> {
+            explosion.add(BlockUtils.serializeByType(block));
+        });
 
-		YamlConfiguration data = new YamlConfiguration(); 
-		List<Map<String, Object>> explosion = new ArrayList<Map<String, Object>>();
+        String uid = UUID.randomUUID().toString();
+        data.set(uid, explosion);
 
-		blocks.forEach(block -> { explosion.add(BlockUtils.serializeByType(block)); });
 
-		String uid = UUID.randomUUID().toString();
-		data.set(uid, explosion);
+        File file = new File(blockSourceFolder, uid + ".yml");
+        saveData(data, file);
 
+        // Schedule a regen.
 
-		File file = new File(blockSourceFolder, uid + ".yml");
-		saveData(data, file);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+            decodeBlockData(data);
+        }, getDelay() * 20);
+    }
 
-		// Schedule a regen.
+    /**
+     * Load all entities from files
+     * and begin deserializing.
+     */
+    public void loadEntities() {
 
-		Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> { decodeBlockData(data); }, getDelay() * 20);
-	}
+        synchronized (fileLock) {
+            for (String name : entitySourceFolder.list()) {
 
-	/**
-	 * Load all entities from files
-	 * and begin deserializing.
-	 */
-	public void loadEntities() {
+                File file = new File(entitySourceFolder, name);
 
-		synchronized(fileLock) {
-			for (String name : entitySourceFolder.list()) {
+                if (!file.exists() || (file.length() == 0)) return;
 
-				File file = new File(entitySourceFolder, name);
+                YamlConfiguration data = new YamlConfiguration();
 
-				if (!file.exists() || (file.length() == 0)) return;
+                try {
+                    data.load(file);
+                } catch (IOException | InvalidConfigurationException e) {
+                    e.printStackTrace();
+                }
 
-				YamlConfiguration data = new YamlConfiguration();
+                // Decode the data
 
-				try {
-					data.load(file);
-				} catch (IOException | InvalidConfigurationException e) {
-					e.printStackTrace();
-				}
+                decodeEntityData(data);
+            }
+        }
+    }
 
-				// Decode the data
+    /**
+     * Load all blocks from files
+     * and begin deserializing.
+     */
+    public void loadBlocks() {
 
-				decodeEntityData(data);
-			}
-		}
-	}
+        synchronized (fileLock) {
+            for (String name : blockSourceFolder.list()) {
 
-	/**
-	 * Load all blocks from files
-	 * and begin deserializing.
-	 */
-	public void loadBlocks() {
+                File file = new File(blockSourceFolder, name);
 
-		synchronized(fileLock) {
-			for (String name : blockSourceFolder.list()) {
+                if (!file.exists() || (file.length() == 0)) continue;
 
-				File file = new File(blockSourceFolder, name);
+                YamlConfiguration data = new YamlConfiguration();
 
-				if (!file.exists() || (file.length() == 0)) continue;
+                try {
+                    data.load(file);
+                } catch (IOException | InvalidConfigurationException e) {
+                    e.printStackTrace();
+                }
 
-				YamlConfiguration data = new YamlConfiguration();
+                // Decode the data
 
-				try {
-					data.load(file);
-				} catch (IOException | InvalidConfigurationException e) {
-					e.printStackTrace();
-				}
+                decodeBlockData(data);
+            }
+        }
+    }
 
-				// Decode the data
+    /**
+     * Deserialize data back into SerializedBlock Objects
+     * and pass for regeneration.
+     *
+     * @param data
+     */
+    private void decodeBlockData(YamlConfiguration data) {
 
-				decodeBlockData(data);
-			}
-		}
-	}
+        synchronized (decodeLock) {
+            try {
+                for (String key : data.getKeys(false)) {
 
-	private final Object decodeLock = new Object();
+                    List<? extends SerializedBlock> blocks = new ArrayList<>();
 
-	/**
-	 * Deserialize data back into SerializedBlock Objects
-	 * and pass for regeneration.
-	 * 
-	 * @param data
-	 */
-	private void decodeBlockData(YamlConfiguration data) {
+                    List<Map<?, ?>> mapList = data.getMapList(key);
 
-		synchronized(decodeLock) {
-			try {
-				for (String key : data.getKeys(false)) {
+                    for (Map<?, ?> map : mapList) {
 
-					List<? extends SerializedBlock> blocks = new ArrayList<>();
+                        blocks.add(BlockUtils.deserializeByType(map));
+                    }
 
-					List<Map<?, ?>> mapList = data.getMapList(key);
+                    if (!blocks.isEmpty()) plugin.getTaskHolder().addBlocks(key, blocks);
+                }
 
-					for (Map<?, ?> map : mapList) {
+            } catch (Exception e) {
+                System.out.println("Failed Decoding Blocks to respawn.");
+                e.printStackTrace();
+            }
+        }
+    }
 
-						blocks.add(BlockUtils.deserializeByType(map));
-					}
+    /**
+     * Deserialize data back into a SerializedEntity Object
+     * and pass for regeneration.
+     *
+     * @param data
+     */
+    private void decodeEntityData(YamlConfiguration data) {
 
-					if (!blocks.isEmpty()) plugin.getTaskHolder().addBlocks(key ,blocks);
-				}
+        synchronized (decodeLock) {
+            try {
+                for (String key : data.getKeys(false)) {
 
-			} catch (Exception e) {
-				System.out.println("Failed Decoding Blocks to respawn.");
-				e.printStackTrace();
-			}
-		}
-	}
+                    Map<String, Object> map = Objects.requireNonNull(data.getConfigurationSection(key)).getValues(true);
 
-	/**
-	 * Deserialize data back into a SerializedEntity Object
-	 * and pass for regeneration.
-	 * 
-	 * @param data
-	 */
-	private void decodeEntityData(YamlConfiguration data) {
+                    plugin.getTaskHolder().addEntity(key, EntityUtils.deserializeByType(map));
+                }
 
-		synchronized(decodeLock) {
-			try {
-				for (String key : data.getKeys(false)) {
+            } catch (Exception e) {
+                System.out.println("Failed Decoding Entities to respawn.");
+                e.printStackTrace();
+            }
+        }
+    }
 
-					Map<String, Object> map = Objects.requireNonNull(data.getConfigurationSection(key)).getValues(true);
+    private void saveData(FileConfiguration data, File file) {
 
-					plugin.getTaskHolder().addEntity(key, EntityUtils.deserializeByType(map));
-				}
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            synchronized (fileLock) {
+                try {
+                    data.save(file);
+                } catch (IOException e) {
+                    System.err.println("Saving data error.");
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
-			} catch (Exception e) {
-				System.out.println("Failed Decoding Entities to respawn.");
-				e.printStackTrace();
-			}
-		}
-	}
+    protected void deleteBlockData(String uid) {
 
-	private final Object fileLock = new Object();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            synchronized (fileLock) {
+                File file = new File(blockSourceFolder, uid + ".yml");
 
-	private void saveData(FileConfiguration data, File file) {
+                if (!file.exists()) return;
 
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			synchronized(fileLock) {
-				try {
-					data.save(file);
-				} catch (IOException e) {
-					System.err.println("Saving data error.");
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+                file.delete();
+            }
+        });
+    }
 
-	protected void deleteBlockData(String uid) {
+    protected void deleteEntityData(String uid) {
 
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			synchronized(fileLock) {
-				File file = new File(blockSourceFolder, uid + ".yml");
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            synchronized (fileLock) {
+                File file = new File(entitySourceFolder, uid + ".yml");
 
-				if (!file.exists()) return;
+                if (!file.exists()) return;
 
-				file.delete();
-			}
-		});
-	}
-
-	protected void deleteEntityData(String uid) {
-
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			synchronized(fileLock) {
-				File file = new File(entitySourceFolder, uid + ".yml");
-
-				if (!file.exists()) return;
-
-				file.delete();
-			}
-		});
-	}
+                file.delete();
+            }
+        });
+    }
 }

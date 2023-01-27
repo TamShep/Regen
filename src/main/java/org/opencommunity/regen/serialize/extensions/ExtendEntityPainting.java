@@ -1,112 +1,93 @@
-/*
- *  Regen - A plug-in for Spigot/Bukkit based Minecraft servers.
- *  Copyright (C) 2020  ElgarL
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.opencommunity.regen.serialize.extensions;
-
-import java.util.Map;
 
 import org.bukkit.Art;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Painting;
-
 import org.opencommunity.regen.serialize.SerializedEntity;
 import org.opencommunity.regen.serialize.SerializedObject;
 
-/**
- * @author ElgarL
- *
- */
+import java.util.Map;
+
+
 public class ExtendEntityPainting extends SerializedEntity {
 
-	Art art = null;
+    Art art = null;
 
-	public ExtendEntityPainting () {}
-	/**
-	 * Constructor to create a ExtendEntityPainting from an Entity.
-	 * 
-	 * @param <T>		extends Entity
-	 * @param entity	the Entity to store.
-	 */
-	public <T extends Entity> ExtendEntityPainting(T entity) {
+    public ExtendEntityPainting() {
+    }
 
-		super(entity);
+    /**
+     * Constructor to create a ExtendEntityPainting from an Entity.
+     *
+     * @param <T>    extends Entity
+     * @param entity the Entity to store.
+     */
+    public <T extends Entity> ExtendEntityPainting(T entity) {
 
-		Painting painting = (Painting) entity;
+        super(entity);
 
-		this.art = painting.getArt();
+        Painting painting = (Painting) entity;
 
-		/*
-		 * Shift down half a block for Paintings with a Height of two.
-		 * Prevents the Painting re-spawning one block too high.
-		 */
-		if (art.getBlockHeight() > 1)
-			loc.add(0, -0.5, 0);
+        this.art = painting.getArt();
 
-	}
+        /*
+         * Shift down half a block for Paintings with a Height of two.
+         * Prevents the Painting re-spawning one block too high.
+         */
+        if (art.getBlockHeight() > 1)
+            loc.add(0, -0.5, 0);
 
-	@Override
-	public Entity regen() {
+    }
 
-		Painting spawn = null;
+    @Override
+    public Entity regen() {
 
-		try {
-			spawn = (Painting) super.regen();
+        Painting spawn = null;
 
-			spawn.setArt(art, true);
-			spawn.setFacingDirection(facing);
+        try {
+            spawn = (Painting) super.regen();
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return spawn;
-	}
+            spawn.setArt(art, true);
+            spawn.setFacingDirection(facing);
 
-	@Override
-	public ExtendEntityPainting clone() {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return spawn;
+    }
 
-		ExtendEntityPainting clone = null;
+    @Override
+    public ExtendEntityPainting clone() {
 
-		clone = (ExtendEntityPainting) super.clone();
-		clone.art = this.art;
+        ExtendEntityPainting clone = null;
 
-		return clone;
-	}
+        clone = (ExtendEntityPainting) super.clone();
+        clone.art = this.art;
 
-	@Override
-	public Map<String, Object> serialize() {
+        return clone;
+    }
 
-		Map<String, Object> result = super.serialize();
+    @Override
+    public Map<String, Object> serialize() {
 
-		if (facing != null) result.put("facing", facing.name());
-		if (art != null) result.put("art", art.name());
+        Map<String, Object> result = super.serialize();
+
+        if (facing != null) result.put("facing", facing.name());
+        if (art != null) result.put("art", art.name());
 
 
-		return result;
+        return result;
 
-	}
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
 
-		super.deserialize(map);
+        super.deserialize(map);
 
-		if (map.containsKey("art")) this.art = Art.valueOf((String) map.get("art"));
+        if (map.containsKey("art")) this.art = Art.valueOf((String) map.get("art"));
 
-		return (Z) this;
-	}
+        return (Z) this;
+    }
 }

@@ -1,125 +1,106 @@
-/*
- *  Regen - A plug-in for Spigot/Bukkit based Minecraft servers.
- *  Copyright (C) 2020  ElgarL
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.opencommunity.regen.serialize.extensions;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.bukkit.DyeColor;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.banner.Pattern;
-
 import org.opencommunity.regen.serialize.SerializedBlock;
 import org.opencommunity.regen.serialize.SerializedObject;
 
-/**
- * @author ElgarL
- *
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+
 public class ExtendBlockBanner extends SerializedBlock {
 
-	private DyeColor baseColor = null;
-	private List<Pattern> patterns = new ArrayList<Pattern>();
+    private DyeColor baseColor = null;
+    private List<Pattern> patterns = new ArrayList<Pattern>();
 
-	public ExtendBlockBanner() {}
-	/**
-	 * Constructor to create a ExtendBlockBanner from a Block.
-	 * 
-	 * @param <T>	extends Block
-	 * @param block	the Block to store.
-	 */
-	public <T extends Block> ExtendBlockBanner(T block) {
+    public ExtendBlockBanner() {
+    }
 
-		super(block);
+    /**
+     * Constructor to create a ExtendBlockBanner from a Block.
+     *
+     * @param <T>   extends Block
+     * @param block the Block to store.
+     */
+    public <T extends Block> ExtendBlockBanner(T block) {
 
-		Banner state = (Banner) block.getState();
+        super(block);
 
-		this.baseColor = state.getBaseColor();
-		this.patterns = state.getPatterns();
-	}
+        Banner state = (Banner) block.getState();
 
-	@Override
-	public BlockState regen() {
+        this.baseColor = state.getBaseColor();
+        this.patterns = state.getPatterns();
+    }
 
-		Banner state = (Banner) super.regen();
+    @Override
+    public BlockState regen() {
 
-		state.setBaseColor(getBaseColor());
-		state.setPatterns(getPatterns());
+        Banner state = (Banner) super.regen();
 
-		state.update(true);
+        state.setBaseColor(getBaseColor());
+        state.setPatterns(getPatterns());
 
-		return state.getBlock().getState();
-	}
+        state.update(true);
 
-	@Override
-	public ExtendBlockBanner clone() {
+        return state.getBlock().getState();
+    }
 
-		ExtendBlockBanner clone = null;
+    @Override
+    public ExtendBlockBanner clone() {
 
-		clone = (ExtendBlockBanner) super.clone();
+        ExtendBlockBanner clone = null;
 
-		clone.baseColor = this.baseColor;
-		clone.patterns.addAll(this.patterns);
+        clone = (ExtendBlockBanner) super.clone();
 
-		return clone;
-	}
+        clone.baseColor = this.baseColor;
+        clone.patterns.addAll(this.patterns);
 
-	@Override
-	public Map<String, Object> serialize() {
+        return clone;
+    }
 
-		Map<String, Object> result = super.serialize();
+    @Override
+    public Map<String, Object> serialize() {
 
-		if (getBaseColor() != null) result.put("colour", getBaseColor().name());
-		if (!getPatterns().isEmpty()) result.put("patterns", getPatterns());
+        Map<String, Object> result = super.serialize();
 
-		return result;
-	}
+        if (getBaseColor() != null) result.put("colour", getBaseColor().name());
+        if (!getPatterns().isEmpty()) result.put("patterns", getPatterns());
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
+        return result;
+    }
 
-		super.deserialize(map);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
 
-		if (map.containsKey("colour")) this.baseColor = DyeColor.valueOf((String) map.get("colour"));
-		if (map.containsKey("patterns")) this.patterns = (List<Pattern>) map.get("patterns");
+        super.deserialize(map);
 
-		return (Z) this;
-	}
+        if (map.containsKey("colour")) this.baseColor = DyeColor.valueOf((String) map.get("colour"));
+        if (map.containsKey("patterns")) this.patterns = (List<Pattern>) map.get("patterns");
 
-	/**
-	 * @return the baseColor
-	 */
-	public DyeColor getBaseColor() {
+        return (Z) this;
+    }
 
-		return baseColor;
-	}
+    /**
+     * @return the baseColor
+     */
+    public DyeColor getBaseColor() {
+
+        return baseColor;
+    }
 
 
-	/**
-	 * @return the patterns
-	 */
-	public List<Pattern> getPatterns() {
+    /**
+     * @return the patterns
+     */
+    public List<Pattern> getPatterns() {
 
-		return patterns;
-	}
+        return patterns;
+    }
 
 }

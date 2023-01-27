@@ -1,108 +1,89 @@
-/*
- *  Regen - A plug-in for Spigot/Bukkit based Minecraft servers.
- *  Copyright (C) 2020  ElgarL
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
 package org.opencommunity.regen.serialize.extensions;
-
-import java.util.Map;
 
 import org.bukkit.Rotation;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
-
 import org.opencommunity.regen.serialize.SerializedEntity;
 import org.opencommunity.regen.serialize.SerializedObject;
 
-/**
- * @author ElgarL
- *
- */
+import java.util.Map;
+
+
 public class ExtendEntityItemFrame extends SerializedEntity {
 
-	Rotation rotation = null;
+    Rotation rotation = null;
 
-	public ExtendEntityItemFrame () {}
-	/**
-	 * Constructor to create a ExtendEntityItemFrame from an Entity.
-	 * 
-	 * @param <T>		extends Entity
-	 * @param entity	the Entity to store.
-	 */
-	public <T extends Entity> ExtendEntityItemFrame(T entity) {
+    public ExtendEntityItemFrame() {
+    }
 
-		super(entity);
+    /**
+     * Constructor to create a ExtendEntityItemFrame from an Entity.
+     *
+     * @param <T>    extends Entity
+     * @param entity the Entity to store.
+     */
+    public <T extends Entity> ExtendEntityItemFrame(T entity) {
 
-		ItemFrame frame = (ItemFrame)entity;
+        super(entity);
 
-		rotation = frame.getRotation();
-		customName = frame.getCustomName();
+        ItemFrame frame = (ItemFrame) entity;
 
-		this.items.add(frame.getItem());
-	}
+        rotation = frame.getRotation();
+        customName = frame.getCustomName();
 
-	@Override
-	public Entity regen() {
+        this.items.add(frame.getItem());
+    }
 
-		ItemFrame spawn = null;
+    @Override
+    public Entity regen() {
 
-		try {
-			spawn = (ItemFrame) super.regen();
+        ItemFrame spawn = null;
 
-			spawn.setFacingDirection(facing, true);
-			spawn.setRotation(rotation);
+        try {
+            spawn = (ItemFrame) super.regen();
 
-			if (customName != null) spawn.setCustomName(customName);
+            spawn.setFacingDirection(facing, true);
+            spawn.setRotation(rotation);
 
-			if (hasInventory()) spawn.setItem(getInventory()[0]);
+            if (customName != null) spawn.setCustomName(customName);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return spawn;
-	}
+            if (hasInventory()) spawn.setItem(getInventory()[0]);
 
-	@Override
-	public ExtendEntityItemFrame clone() {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return spawn;
+    }
 
-		ExtendEntityItemFrame clone = null;
+    @Override
+    public ExtendEntityItemFrame clone() {
 
-		clone = (ExtendEntityItemFrame) super.clone();
-		clone.rotation = this.rotation;
+        ExtendEntityItemFrame clone = null;
 
-		return clone;
-	}
+        clone = (ExtendEntityItemFrame) super.clone();
+        clone.rotation = this.rotation;
 
-	@Override
-	public Map<String, Object> serialize() {
+        return clone;
+    }
 
-		Map<String, Object> result = super.serialize();
+    @Override
+    public Map<String, Object> serialize() {
 
-		if (rotation != null) result.put("rotation", rotation.name());
-		return result;
+        Map<String, Object> result = super.serialize();
 
-	}
+        if (rotation != null) result.put("rotation", rotation.name());
+        return result;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
+    }
 
-		super.deserialize(map);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <Z extends SerializedObject> Z deserialize(Map<?, ?> map) {
 
-		if (map.containsKey("rotation")) this.rotation = Rotation.valueOf((String) map.get("rotation"));
+        super.deserialize(map);
 
-		return (Z) this;
-	}
+        if (map.containsKey("rotation")) this.rotation = Rotation.valueOf((String) map.get("rotation"));
+
+        return (Z) this;
+    }
 }
