@@ -1,3 +1,11 @@
-/target/
-.settings/
-/deploy.cmd
+target/
+.project
+.classpath
+.settings
+.idea
+.vscode
+.gradle
+bin/
+build/
+old/
+gradle/

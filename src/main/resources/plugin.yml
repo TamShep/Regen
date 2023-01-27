@@ -1,0 +1,8 @@
+name: Regen
+main: org.opencommunity.regen.Regen
+version: ${version}
+api-version: 1.19
+author: [ElgarL, Envel]
+description: None
+
+
