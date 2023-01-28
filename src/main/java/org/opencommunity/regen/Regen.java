@@ -20,7 +20,7 @@ public class Regen extends JavaPlugin {
         /*
          * Initialize everything we can here
          * but do NOTHING that attempts to load
-         * any data, nor access any other plug-ins.
+         * any data, nor access any other plugins.
          */
         version = instance.getDescription().getVersion();
         fileHandler = new FileHandler(instance);
@@ -34,7 +34,7 @@ public class Regen extends JavaPlugin {
         /*
          * Executes after the worlds have initialized.
          *
-         * Hook other plug-ins, register commands and
+         * Hook other plugins, register commands and
          * perform any remaining tasks to be fully
          * up and running.
          */

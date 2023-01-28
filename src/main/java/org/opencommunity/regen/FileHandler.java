@@ -104,7 +104,7 @@ public class FileHandler {
         if (blocks == null || blocks.isEmpty()) return;
 
         YamlConfiguration data = new YamlConfiguration();
-        List<Map<String, Object>> explosion = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> explosion = new ArrayList<>();
 
         blocks.forEach(block -> {
             explosion.add(BlockUtils.serializeByType(block));
@@ -131,7 +131,7 @@ public class FileHandler {
     public void loadEntities() {
 
         synchronized (fileLock) {
-            for (String name : entitySourceFolder.list()) {
+            for (String name : Objects.requireNonNull(entitySourceFolder.list())) {
 
                 File file = new File(entitySourceFolder, name);
 
@@ -159,7 +159,7 @@ public class FileHandler {
     public void loadBlocks() {
 
         synchronized (fileLock) {
-            for (String name : blockSourceFolder.list()) {
+            for (String name : Objects.requireNonNull(blockSourceFolder.list())) {
 
                 File file = new File(blockSourceFolder, name);
 

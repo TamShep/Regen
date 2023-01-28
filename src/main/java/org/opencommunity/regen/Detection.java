@@ -1,7 +1,6 @@
 package org.opencommunity.regen;
 
-import org.bukkit.Material;
-import org.bukkit.Tag;
+import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -57,6 +56,8 @@ public class Detection implements Listener {
 
         Entity entity = event.getEntity();
 
+        if (entity.getType() != EntityType.CREEPER) return;
+
         if (entity.getType() != EntityType.ITEM_FRAME
                 && entity.getType() != EntityType.PAINTING) return;
 
@@ -75,9 +76,10 @@ public class Detection implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
 
-        if (event.getCause() != DamageCause.ENTITY_EXPLOSION) return;
-
         Entity entity = event.getEntity();
+        if (entity.getType() != EntityType.CREEPER) return;
+
+        if (event.getCause() != DamageCause.ENTITY_EXPLOSION) return;
 
         if (entity.getType() != EntityType.ARMOR_STAND) return;
 
@@ -94,6 +96,9 @@ public class Detection implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityExplode(EntityExplodeEvent event) {
+
+        Entity entity = event.getEntity();
+        if (entity.getType() != EntityType.CREEPER) return;
 
         BlockRegenEvent customEvent = new BlockRegenEvent(event.blockList());
         plugin.getServer().getPluginManager().callEvent(customEvent);
@@ -137,34 +142,27 @@ public class Detection implements Listener {
          * doesn't drop an ItemStack.
          */
         switch (entity.getType()) {
-
-            case ITEM_FRAME:
-
+            case ITEM_FRAME -> {
                 this.handler.saveEntity(entity);
                 ((ItemFrame) entity).setItem(null);
                 entity.remove();
-                break;
-
-            case PAINTING:
-
+            }
+            case PAINTING -> {
                 this.handler.saveEntity(entity);
                 entity.remove();
-                break;
-
-            case ARMOR_STAND:
-
+            }
+            case ARMOR_STAND -> {
                 ArmorStand stand = (ArmorStand) entity;
-
                 if (!stand.isInvulnerable()) {
 
                     this.handler.saveEntity(stand);
                     stand.getEquipment().clear();
                 }
-                break;
+            }
+            default -> {
+            }
 
-            default:
-
-                //System.out.println("*** Entity type: " + entity.getType().name());
+            //System.out.println("*** Entity type: " + entity.getType().name());
         }
     }
 
@@ -188,40 +186,28 @@ public class Detection implements Listener {
             boolean setAir = false;
 
             switch (state.getType()) {
-
-                case LECTERN:
-
+                case LECTERN -> {
                     Lectern lectern = (Lectern) state;
                     lectern.getInventory().clear();
                     setAir = true;
-                    break;
-
-                case BEACON:
-
-                    setAir = true;
-                    break;
-
-                case JUKEBOX:
-
-                    // TODO does nothing, still drops a record.
+                }
+                case BEACON -> setAir = true;
+                case JUKEBOX -> {
                     ((Jukebox) state).stopPlaying();
                     ((Jukebox) state).setRecord(new ItemStack(Material.AIR));
                     setAir = true;
-                    break;
-
-                default:
-
+                }
+                default -> {
                     if (state instanceof Container container) {
 
                         container.getInventory().clear();
                         setAir = true;
                     }
-
                     if (Tag.DOORS.isTagged(state.getType())) setAir = true;
+                }
             }
 
             if (setAir) {
-
                 state.setType(Material.AIR);
                 state.update(true, false);
             }

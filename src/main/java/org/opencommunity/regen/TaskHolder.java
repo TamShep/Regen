@@ -1,6 +1,7 @@
 package org.opencommunity.regen;
 
-import org.bukkit.Bukkit;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitTask;
 import org.opencommunity.regen.serialize.SerializedBlock;
 import org.opencommunity.regen.serialize.SerializedObject;
@@ -107,7 +108,16 @@ public class TaskHolder {
 
                         List<SerializedBlock> blocks = entry.getValue();
                         SerializedObject block = blocks.remove(0);
-                        Bukkit.getScheduler().runTask(plugin, () -> block.regen());
+
+                        Location loc = block.getLocation();
+                        World world = loc.getWorld();
+                        Material type = ((SerializedBlock) block).getType();
+                        // Add block paste sound
+                        world.playSound(loc, Sound.BLOCK_GRASS_PLACE, 1, 1);
+                        // Add block break particles
+                        world.playEffect(loc, Effect.STEP_SOUND, type);
+
+                        Bukkit.getScheduler().runTask(plugin, block::regen);
 
                         if (blocks.size() > 0) {
                             /*

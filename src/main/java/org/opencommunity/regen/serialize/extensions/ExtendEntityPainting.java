@@ -59,7 +59,7 @@ public class ExtendEntityPainting extends SerializedEntity {
     @Override
     public ExtendEntityPainting clone() {
 
-        ExtendEntityPainting clone = null;
+        ExtendEntityPainting clone;
 
         clone = (ExtendEntityPainting) super.clone();
         clone.art = this.art;

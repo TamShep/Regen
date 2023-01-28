@@ -1,6 +1,6 @@
 package org.opencommunity.regen.serialize;
 
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 
 public abstract class SerializedObject implements Cloneable {
 
-    protected List<ItemStack> items = new ArrayList<ItemStack>();
+    protected List<ItemStack> items = new ArrayList<>();
     protected Location loc = null;
 
     public SerializedObject() {
@@ -52,12 +52,12 @@ public abstract class SerializedObject implements Cloneable {
      */
     public Map<String, Object> serialize() {
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         result.put("location", loc.serialize());
 
         if (hasInventory()) {
-            List<Map<String, Object>> inventory = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> inventory = new ArrayList<>();
 
             /*
              * Add individually to eliminate
@@ -112,7 +112,7 @@ public abstract class SerializedObject implements Cloneable {
      */
     public ItemStack[] getInventory() {
 
-        return this.items.toArray(new ItemStack[this.items.size()]);
+        return this.items.toArray(new ItemStack[0]);
     }
 
     /**

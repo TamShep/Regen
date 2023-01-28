@@ -1,8 +1,6 @@
 package org.opencommunity.regen.serialize;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Tag;
+import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.Inventory;
@@ -42,19 +40,15 @@ public class SerializedBlock extends SerializedObject {
         Inventory container = null;
 
         switch (state.getType()) {
-
-            case LECTERN:
-                container = ((Lectern) state).getSnapshotInventory();
-                break;
-
-            case JUKEBOX:
+            case LECTERN -> container = ((Lectern) state).getSnapshotInventory();
+            case JUKEBOX -> {
                 ItemStack disc = ((Jukebox) state).getRecord();
                 if (disc != null) this.items.add(disc);
-                break;
-
-            default:
+            }
+            default -> {
                 if (state instanceof Container)
                     container = ((Container) state).getSnapshotInventory();
+            }
         }
         /*
          * Store this Inventory eliminating null.
@@ -78,6 +72,7 @@ public class SerializedBlock extends SerializedObject {
 
             state.setType(this.getType());
             state.setBlockData(this.getBlockData());
+
             /*
              * Change the block with physics
              * if conditions are met.
@@ -95,19 +90,15 @@ public class SerializedBlock extends SerializedObject {
                 Inventory container = null;
 
                 switch (state.getType()) {
-
-                    case LECTERN:
-                        container = ((Lectern) state).getInventory();
-                        break;
-
-                    case JUKEBOX:
+                    case LECTERN -> container = ((Lectern) state).getInventory();
+                    case JUKEBOX -> {
                         ((Jukebox) state).setRecord(this.items.get(0));
                         state.update(true, false);
-                        break;
-
-                    default:
+                    }
+                    default -> {
                         if (state instanceof Container)
                             container = ((Container) state).getInventory();
+                    }
                 }
 
                 if (container != null) container.setContents(this.getInventory());
@@ -119,7 +110,7 @@ public class SerializedBlock extends SerializedObject {
     @Override
     public SerializedBlock clone() {
 
-        SerializedBlock clone = null;
+        SerializedBlock clone;
 
         clone = (SerializedBlock) super.clone();
         clone.blockData = this.blockData.clone();
