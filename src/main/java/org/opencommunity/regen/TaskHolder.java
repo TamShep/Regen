@@ -1,7 +1,6 @@
 package org.opencommunity.regen;
 
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.scheduler.BukkitTask;
 import org.opencommunity.regen.serialize.SerializedBlock;
 import org.opencommunity.regen.serialize.SerializedObject;
@@ -18,8 +17,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class TaskHolder {
 
-    private final Queue<Entry<String, List<SerializedBlock>>> blockQueue = new ConcurrentLinkedQueue<Entry<String, List<SerializedBlock>>>();
-    private final Queue<Entry<String, SerializedObject>> entityQueue = new ConcurrentLinkedQueue<Entry<String, SerializedObject>>();
+    private final Queue<Entry<String, List<SerializedBlock>>> blockQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<Entry<String, SerializedObject>> entityQueue = new ConcurrentLinkedQueue<>();
 
     private BukkitTask task = null;
 
@@ -45,23 +44,13 @@ public class TaskHolder {
      */
     public void addBlocks(String key, Collection<? extends SerializedBlock> blocks) {
 
-        List<SerializedBlock> regen = new ArrayList<SerializedBlock>();
+        List<SerializedBlock> regen = new ArrayList<>(blocks);
 
-        regen.addAll(blocks);
-
-        Collections.sort(regen, new Comparator<SerializedBlock>() {
-
-            @Override
-            public int compare(SerializedBlock block1, SerializedBlock block2) {
-
-                return block1.getLocation().getBlockY() - block2.getLocation().getBlockY();
-            }
-
-        });
+        regen.sort(Comparator.comparingInt(block -> block.getLocation().getBlockY()));
 
         if (regen.size() > 0) {
 
-            Entry<String, List<SerializedBlock>> entry = new AbstractMap.SimpleEntry<String, List<SerializedBlock>>(key, regen);
+            Entry<String, List<SerializedBlock>> entry = new AbstractMap.SimpleEntry<>(key, regen);
 
             blockQueue.add(entry);
 
@@ -80,7 +69,7 @@ public class TaskHolder {
 
         if (entity != null) {
 
-            Entry<String, SerializedObject> entry = new AbstractMap.SimpleEntry<String, SerializedObject>(key, entity);
+            Entry<String, SerializedObject> entry = new AbstractMap.SimpleEntry<>(key, entity);
 
             entityQueue.add(entry);
 
@@ -91,67 +80,64 @@ public class TaskHolder {
 
     private void startMonitor() {
 
-        task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
+        task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
 
-            public void run() {
+            if (!blockQueue.isEmpty()) {
 
-                if (!blockQueue.isEmpty()) {
+                int size = blockQueue.size();
+                Entry<String, List<SerializedBlock>> entry;
+                /*
+                 * Pull every entry and regen one
+                 * block from each list per pass.
+                 */
+                for (int i = 0; i < size; i++) {
+                    entry = blockQueue.poll();
 
-                    int size = blockQueue.size();
-                    Entry<String, List<SerializedBlock>> entry;
-                    /*
-                     * Pull every entry and regen one
-                     * block from each list per pass.
-                     */
-                    for (int i = 0; i < size; i++) {
-                        entry = blockQueue.poll();
+                    assert entry != null;
+                    List<SerializedBlock> blocks = entry.getValue();
+                    SerializedObject block = blocks.remove(0);
 
-                        List<SerializedBlock> blocks = entry.getValue();
-                        SerializedObject block = blocks.remove(0);
+                    Location loc = block.getLocation();
+                    World world = loc.getWorld();
+                    Material type = ((SerializedBlock) block).getType();
+                    // Add block paste sound
+                    world.playSound(loc, Sound.BLOCK_GRASS_PLACE, 1, 1);
+                    // Add block break particles
+                    world.playEffect(loc, Effect.STEP_SOUND, type);
 
-                        Location loc = block.getLocation();
-                        World world = loc.getWorld();
-                        Material type = ((SerializedBlock) block).getType();
-                        // Add block paste sound
-                        world.playSound(loc, Sound.BLOCK_GRASS_PLACE, 1, 1);
-                        // Add block break particles
-                        world.playEffect(loc, Effect.STEP_SOUND, type);
+                    Bukkit.getScheduler().runTask(plugin, block::regen);
 
-                        Bukkit.getScheduler().runTask(plugin, block::regen);
+                    if (blocks.size() > 0) {
+                        /*
+                         * Add the entry back onto the
+                         * end of the queue as there
+                         * are more blocks to regen.
+                         */
+                        entry.setValue(blocks);
+                        blockQueue.add(entry);
 
-                        if (blocks.size() > 0) {
-                            /*
-                             * Add the entry back onto the
-                             * end of the queue as there
-                             * are more blocks to regen.
-                             */
-                            entry.setValue(blocks);
-                            blockQueue.add(entry);
-
-                        } else {
-                            //System.out.println("Finished: " + entry.getKey());
-                            /*
-                             * Delete any data files for this entry
-                             * as we have finished its regen.
-                             */
-                            handler.deleteBlockData(entry.getKey());
-                        }
+                    } else {
+                        //System.out.println("Finished: " + entry.getKey());
+                        /*
+                         * Delete any data files for this entry
+                         * as we have finished its regen.
+                         */
+                        handler.deleteBlockData(entry.getKey());
                     }
-                } else if (!entityQueue.isEmpty()) {
-                    /*
-                     * Regen entities one at a time.
-                     */
-                    Entry<String, SerializedObject> entry = entityQueue.poll();
-
-                    Bukkit.getScheduler().runTask(plugin, () -> entry.getValue().regen());
-                    /*
-                     * Delete any data files for this entry
-                     * as we have finished its regen.
-                     */
-                    handler.deleteEntityData(entry.getKey());
                 }
-            }
+            } else if (!entityQueue.isEmpty()) {
+                /*
+                 * Regen entities one at a time.
+                 */
+                Entry<String, SerializedObject> entry = entityQueue.poll();
 
+                Bukkit.getScheduler().runTask(plugin, () -> entry.getValue().regen());
+                /*
+                 * Delete any data files for this entry
+                 * as we have finished its regen.
+                 */
+                handler.deleteEntityData(entry.getKey());
+            }
         }, handler.getDelay() * 20, handler.getFrequency());
     }
 
