@@ -24,6 +24,8 @@ public class TaskHolder {
 
     private final Regen plugin;
     private final FileHandler handler;
+    private long frequency;
+    private long delay;
 
     /**
      * Constructor for the Asynchronous TaskHolder.
@@ -34,6 +36,8 @@ public class TaskHolder {
 
         this.plugin = plugin;
         handler = this.plugin.getFileHandler();
+        this.frequency = handler.frequency;
+        this.delay = handler.delay;
     }
 
     /**
@@ -138,7 +142,7 @@ public class TaskHolder {
                  */
                 handler.deleteEntityData(entry.getKey());
             }
-        }, handler.getDelay() * 20, handler.getFrequency());
+        }, delay * 20, frequency);
     }
 
     /**

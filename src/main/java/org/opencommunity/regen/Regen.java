@@ -24,8 +24,12 @@ public class Regen extends JavaPlugin {
          */
         version = instance.getDescription().getVersion();
         fileHandler = new FileHandler(instance);
-        taskHolder = new TaskHolder(instance);
+        fileHandler.loadConfig();
+        fileHandler.init();
+        fileHandler.loadBlocks();
+        fileHandler.loadEntities();
         detection = new Detection(instance);
+        taskHolder = new TaskHolder(instance);
     }
 
     @Override
@@ -41,10 +45,6 @@ public class Regen extends JavaPlugin {
         final PluginManager pluginManager = getServer().getPluginManager();
 
         pluginManager.registerEvents(detection, instance);
-
-        fileHandler.loadConfig();
-        fileHandler.loadBlocks();
-        fileHandler.loadEntities();
     }
 
     @Override

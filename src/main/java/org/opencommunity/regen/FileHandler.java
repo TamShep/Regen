@@ -1,6 +1,7 @@
 package org.opencommunity.regen;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,6 +14,7 @@ import org.opencommunity.regen.serialize.utils.EntityUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Handles saving, loading, decoding
@@ -29,6 +31,9 @@ public class FileHandler {
     private final Object decodeLock = new Object();
     private final Object fileLock = new Object();
     private FileConfiguration config;
+    public long delay;
+    public long frequency;
+    public List<Material> skipMaterials;
 
     /**
      * Constructor for the FileHandler.
@@ -58,6 +63,12 @@ public class FileHandler {
         config = plugin.getConfig();
     }
 
+    public void init() {
+        this.delay = getDelay();
+        this.frequency = getFrequency();
+        this.skipMaterials = getSkipMaterials();
+    }
+
     public Long getDelay() {
 
         return config.getLong("delay", 10L);
@@ -66,6 +77,17 @@ public class FileHandler {
     public Long getFrequency() {
 
         return config.getLong("frequency", 5L);
+    }
+
+    public List<Material> getSkipMaterials() {
+        List<String> skipMaterialNames = config.getStringList("skipMaterials");
+        if (skipMaterialNames == null) {
+            throw new NullPointerException("The 'skipMaterials' list cannot be null.");
+        }
+        return skipMaterialNames.stream()
+                .map(String::toUpperCase)
+                .map(Material::valueOf)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -89,7 +111,7 @@ public class FileHandler {
 
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
             decodeEntityData(data);
-        }, getDelay() * 20);
+        }, delay * 20);
     }
 
     /**
@@ -121,7 +143,7 @@ public class FileHandler {
 
         Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
             decodeBlockData(data);
-        }, getDelay() * 20);
+        }, delay * 20);
     }
 
     /**

@@ -40,16 +40,15 @@ public class Detection implements Listener {
      * @param plugin Regen instance.
      */
     public Detection(Regen plugin) {
-
         this.plugin = plugin;
-        this.handler = this.plugin.getFileHandler();
+        handler = this.plugin.getFileHandler();
     }
 
     /*
      * Track ITEM_FRAME and PAINTING
      * destroyed in explosions.
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent event) {
 
         if (event.getCause() != RemoveCause.EXPLOSION) return;
@@ -73,7 +72,7 @@ public class Detection implements Listener {
      * Track ARMOR_STAND
      * destroyed in explosions.
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
 
         Entity entity = event.getEntity();
@@ -94,8 +93,9 @@ public class Detection implements Listener {
     /*
      * All blocks destroyed in explosions.
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
+        event.blockList().removeIf(block -> handler.skipMaterials.contains(block.getType()));
 
         Entity entity = event.getEntity();
         if (entity.getType() != EntityType.CREEPER) return;
@@ -114,8 +114,9 @@ public class Detection implements Listener {
     /*
      * All blocks destroyed in explosions.
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
+        event.blockList().removeIf(block -> handler.skipMaterials.contains(block.getType()));
 
         BlockRegenEvent customEvent = new BlockRegenEvent(event.blockList());
         plugin.getServer().getPluginManager().callEvent(customEvent);
