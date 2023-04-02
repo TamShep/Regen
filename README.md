@@ -1,25 +1,8 @@
 # Regen
-A one of a kind explosion regeneration plug-in for [Bukkit/Spigot](https://www.spigotmc.org/resources/authors/elgarl.986705/).
+A one of a kind explosion regeneration plug-in for PaperMC.
 
 Automatically regenerate block damage from explosions. Asynchronous regen queue management.
 Fully automated and supports any plug-in to take control to manage what is restored and what is left destroyed.
-
----
-**To include Regen as a dependency in your own plugins.**
-
-Add a repository in your pom.xml
->        <repository>
->            <id>jitpack.io</id>
->            <url>https://jitpack.io</url>
->        </repository>  
-Then add as a dependency in your pom.xml
->        <dependency>
->            <groupId>com.github.ElgarL</groupId>
->            <artifactId>regen</artifactId>
->            <version>0.0.1</version>
->        </dependency>  
-
----
 
 In your onEnable() method add
 ```java
