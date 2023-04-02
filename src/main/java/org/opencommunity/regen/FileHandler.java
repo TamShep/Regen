@@ -10,6 +10,7 @@ import org.bukkit.entity.Entity;
 import org.opencommunity.regen.serialize.SerializedBlock;
 import org.opencommunity.regen.serialize.utils.BlockUtils;
 import org.opencommunity.regen.serialize.utils.EntityUtils;
+import org.opencommunity.regen.serialize.utils.Scheduler;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,9 +110,10 @@ public class FileHandler {
 
         // Schedule a regen.
 
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+        Scheduler.scheduleAsyncDelayedTask(plugin, () -> {
             decodeEntityData(data);
         }, delay * 20);
+
     }
 
     /**
@@ -141,7 +143,7 @@ public class FileHandler {
 
         // Schedule a regen.
 
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+        Scheduler.scheduleAsyncDelayedTask(plugin, () -> {
             decodeBlockData(data);
         }, delay * 20);
     }
@@ -259,7 +261,7 @@ public class FileHandler {
 
     private void saveData(FileConfiguration data, File file) {
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        Scheduler.runTaskAsynchronously(plugin, () -> {
             synchronized (fileLock) {
                 try {
                     data.save(file);
@@ -273,7 +275,7 @@ public class FileHandler {
 
     protected void deleteBlockData(String uid) {
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        Scheduler.runTaskAsynchronously(plugin, () -> {
             synchronized (fileLock) {
                 File file = new File(blockSourceFolder, uid + ".yml");
 
@@ -286,7 +288,7 @@ public class FileHandler {
 
     protected void deleteEntityData(String uid) {
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        Scheduler.runTaskAsynchronously(plugin, () -> {
             synchronized (fileLock) {
                 File file = new File(entitySourceFolder, uid + ".yml");
 

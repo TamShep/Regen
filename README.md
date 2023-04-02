@@ -1,5 +1,5 @@
 # Regen
-A one of a kind explosion regeneration plug-in for PaperMC.
+A one of a kind explosion regeneration plugin for PaperMC.
 
 Automatically regenerate block damage from explosions. Asynchronous regen queue management.
 Fully automated and supports any plug-in to take control to manage what is restored and what is left destroyed.

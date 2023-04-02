@@ -4,6 +4,7 @@ import org.bukkit.*;
 import org.bukkit.scheduler.BukkitTask;
 import org.opencommunity.regen.serialize.SerializedBlock;
 import org.opencommunity.regen.serialize.SerializedObject;
+import org.opencommunity.regen.serialize.utils.Scheduler;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -84,7 +85,7 @@ public class TaskHolder {
 
     private void startMonitor() {
 
-        task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        Scheduler.runTaskTimerAsynchronously(plugin, () -> {
 
             if (!blockQueue.isEmpty()) {
 
@@ -97,7 +98,10 @@ public class TaskHolder {
                 for (int i = 0; i < size; i++) {
                     entry = blockQueue.poll();
 
-                    assert entry != null;
+                    if (entry == null) {
+                        // Handle the case when entry is null
+                        continue;
+                    }
                     List<SerializedBlock> blocks = entry.getValue();
                     SerializedObject block = blocks.remove(0);
 
@@ -109,7 +113,7 @@ public class TaskHolder {
                     // Add block break particles
                     world.playEffect(loc, Effect.STEP_SOUND, type);
 
-                    Bukkit.getScheduler().runTask(plugin, block::regen);
+                    Scheduler.runTask(plugin, block::regen);
 
                     if (blocks.size() > 0) {
                         /*
@@ -135,7 +139,7 @@ public class TaskHolder {
                  */
                 Entry<String, SerializedObject> entry = entityQueue.poll();
 
-                Bukkit.getScheduler().runTask(plugin, () -> entry.getValue().regen());
+                Scheduler.runTask(plugin, () -> entry.getValue().regen());
                 /*
                  * Delete any data files for this entry
                  * as we have finished its regen.

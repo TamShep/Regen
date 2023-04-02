@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Regen extends JavaPlugin {
 
+    public static boolean isFolia = isFolia();
     private final Regen instance;
     private final String version;
 
@@ -45,12 +46,22 @@ public class Regen extends JavaPlugin {
         final PluginManager pluginManager = getServer().getPluginManager();
 
         pluginManager.registerEvents(detection, instance);
+
     }
 
     @Override
     public void onDisable() {
 
         taskHolder.cancelTask();
+    }
+
+    private static boolean isFolia() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     /**
