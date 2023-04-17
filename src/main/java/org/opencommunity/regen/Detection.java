@@ -95,10 +95,10 @@ public class Detection implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> handler.skipMaterials.contains(block.getType()));
-
         Entity entity = event.getEntity();
         if (entity.getType() != EntityType.CREEPER) return;
+
+        event.blockList().removeIf(block -> handler.skipMaterials.contains(block.getType()));
 
         BlockRegenEvent customEvent = new BlockRegenEvent(event.blockList());
         plugin.getServer().getPluginManager().callEvent(customEvent);
@@ -116,12 +116,12 @@ public class Detection implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
-        event.blockList().removeIf(block -> handler.skipMaterials.contains(block.getType()));
-
         BlockRegenEvent customEvent = new BlockRegenEvent(event.blockList());
         plugin.getServer().getPluginManager().callEvent(customEvent);
 
         if (customEvent.isCancelled()) return;
+
+        event.blockList().removeIf(block -> handler.skipMaterials.contains(block.getType()));
 
         event.blockList().removeIf(block -> (!customEvent.blockList().contains(block)));
 
