@@ -184,7 +184,6 @@ public class FileHandler {
 
         synchronized (fileLock) {
             for (String name : Objects.requireNonNull(blockSourceFolder.list())) {
-
                 File file = new File(blockSourceFolder, name);
 
                 if (!file.exists() || (file.length() == 0)) continue;
@@ -195,9 +194,16 @@ public class FileHandler {
                     data.load(file);
                 } catch (IOException | InvalidConfigurationException e) {
                     e.printStackTrace();
+                    continue; // Skip decoding if there's an error loading the file
                 }
 
-                // Decode the data
+                // Check if the world is known before decoding the block data
+                String worldName = data.getString("world");
+                if (worldName == null || plugin.getServer().getWorld(worldName) == null) {
+                    System.out.println("Skipping block data in " + file.getPath() + " because world is unknown.");
+                    file.delete(); // Remove the file if the world is unknown
+                    continue;
+                }
 
                 decodeBlockData(data);
             }
