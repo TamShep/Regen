@@ -169,6 +169,7 @@ public class Detection implements Listener {
 			break;
 
 		case TNT:
+			
 			entity.remove();
 			break;
 
@@ -237,6 +238,7 @@ public class Detection implements Listener {
 				break;
 
 			case TNT:
+
 				setAir = true;
 				break;
 
