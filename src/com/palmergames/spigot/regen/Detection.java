@@ -168,6 +168,10 @@ public class Detection implements Listener {
 			entity.remove();
 			break;
 
+		case TNT:
+			entity.remove();
+			break;
+
 		case PAINTING:
 
 			this.handler.saveEntity(entity);
@@ -229,6 +233,10 @@ public class Detection implements Listener {
 				// TODO does nothing, still drops a record.
 				((Jukebox) state).stopPlaying();
 				((Jukebox) state).setRecord(new ItemStack(Material.AIR));
+				setAir = true;
+				break;
+
+			case TNT:
 				setAir = true;
 				break;
 
