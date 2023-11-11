@@ -168,7 +168,7 @@ public class Detection implements Listener {
 			entity.remove();
 			break;
 
-		case TNT:
+		case TNTPrimed:
 			
 			entity.remove();
 			break;
