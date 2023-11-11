@@ -27,6 +27,7 @@ import org.bukkit.block.Container;
 import org.bukkit.block.Jukebox;
 import org.bukkit.block.Lectern;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
