@@ -5,7 +5,7 @@
 
 	<groupId>com.palmergames.spigot.regen</groupId>
 	<artifactId>Regen</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.3</version>
 	<description>Explosion management and regeneration</description>
 
 	<properties>
