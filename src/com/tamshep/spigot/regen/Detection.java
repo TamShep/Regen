@@ -196,8 +196,8 @@ public class Detection implements Listener {
                     ((Jukebox) state).setRecord(new ItemStack(Material.AIR));
                     setAir = true;
                 default:
-                    if (state instanceof Container container) {
-
+                    if (state instanceof Container) {
+                        Container container = (Container) state;
                         container.getInventory().clear();
                         setAir = true;
                     }
