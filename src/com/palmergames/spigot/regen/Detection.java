@@ -27,7 +27,6 @@ import org.bukkit.block.Container;
 import org.bukkit.block.Jukebox;
 import org.bukkit.block.Lectern;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -209,25 +208,20 @@ public class Detection implements Listener {
 		for (Block block : blockList) {
 			BlockState state = block.getState();
 
-			/*
-			 * Prevent item drops from containers
-			 * and from blocks that are not
-			 * destroyed by explosions.
-			 */
-			boolean setAir = false;
-
 			switch (state.getType()) {
 
 			case LECTERN:
 
 				Lectern lectern = (Lectern) state;
 				lectern.getInventory().clear();
-				setAir = true;
+				state.setType(Material.AIR);
+				state.update(true, false);
 				break;
 
 			case BEACON:
 
-				setAir = true;
+				state.setType(Material.AIR);
+				state.update(true, false);
 				break;
 
 			case JUKEBOX:
@@ -235,12 +229,14 @@ public class Detection implements Listener {
 				// TODO does nothing, still drops a record.
 				((Jukebox) state).stopPlaying();
 				((Jukebox) state).setRecord(new ItemStack(Material.AIR));
-				setAir = true;
+				state.setType(Material.AIR);
+				state.update(true, false);
 				break;
 
 			case TNT:
 
-				setAir = true;
+				state.setType(Material.AIR);
+				state.update(true, false);
 				break;
 
 			default:
@@ -249,16 +245,13 @@ public class Detection implements Listener {
 
 					Container container = (Container) state;
 					container.getInventory().clear();
-					setAir = true;
+					state.setType(Material.AIR);
 				}
 
-				if (Tag.DOORS.isTagged(state.getType())) setAir = true;
-			}
-
-			if (setAir) {
-
-				state.setType(Material.AIR);
-				state.update(true, false);
+				if (Tag.DOORS.isTagged(state.getType())) {
+					state.setType(Material.AIR);
+					state.update(true, false);
+				};
 			}
 		}
 	}
