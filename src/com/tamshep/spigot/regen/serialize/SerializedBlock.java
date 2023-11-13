@@ -40,15 +40,15 @@ public class SerializedBlock extends SerializedObject {
         Inventory container = null;
 
         switch (state.getType()) {
-            case LECTERN -> container = ((Lectern) state).getSnapshotInventory();
-            case JUKEBOX -> {
+            case LECTERN:
+                container = ((Lectern) state).getSnapshotInventory();
+            case JUKEBOX:
                 ItemStack disc = ((Jukebox) state).getRecord();
                 if (disc != null) this.items.add(disc);
-            }
-            default -> {
-                if (state instanceof Container)
+            default:
+                if (state instanceof Container) {
                     container = ((Container) state).getSnapshotInventory();
-            }
+                }
         }
         /*
          * Store this Inventory eliminating null.
@@ -90,15 +90,15 @@ public class SerializedBlock extends SerializedObject {
                 Inventory container = null;
 
                 switch (state.getType()) {
-                    case LECTERN -> container = ((Lectern) state).getInventory();
-                    case JUKEBOX -> {
+                    case LECTERN:
+                        container = ((Lectern) state).getInventory();
+                    case JUKEBOX:
                         ((Jukebox) state).setRecord(this.items.get(0));
                         state.update(true, false);
-                    }
-                    default -> {
-                        if (state instanceof Container)
+                    default:
+                        if (state instanceof Container) {
                             container = ((Container) state).getInventory();
-                    }
+                        }
                 }
 
                 if (container != null) container.setContents(this.getInventory());

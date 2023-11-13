@@ -143,28 +143,23 @@ public class Detection implements Listener {
          * doesn't drop an ItemStack.
          */
         switch (entity.getType()) {
-            case ITEM_FRAME -> {
+            case ITEM_FRAME:
                 this.handler.saveEntity(entity);
                 ((ItemFrame) entity).setItem(null);
                 entity.remove();
-            }
-            case PAINTING -> {
+            case PAINTING:
                 this.handler.saveEntity(entity);
                 entity.remove();
-            }
-            case PRIMED_TNT -> {
+            case PRIMED_TNT:
                 entity.remove();
-            }
-            case ARMOR_STAND -> {
+            case ARMOR_STAND:
                 ArmorStand stand = (ArmorStand) entity;
                 if (!stand.isInvulnerable()) {
 
                     this.handler.saveEntity(stand);
                     stand.getEquipment().clear();
                 }
-            }
-            default -> {
-            }
+            default:
 
             //System.out.println("*** Entity type: " + entity.getType().name());
         }
@@ -190,25 +185,23 @@ public class Detection implements Listener {
             boolean setAir = false;
 
             switch (state.getType()) {
-                case LECTERN -> {
+                case LECTERN:
                     Lectern lectern = (Lectern) state;
                     lectern.getInventory().clear();
                     setAir = true;
-                }
-                case BEACON -> setAir = true;
-                case JUKEBOX -> {
+                case BEACON:
+                    setAir = true;
+                case JUKEBOX:
                     ((Jukebox) state).stopPlaying();
                     ((Jukebox) state).setRecord(new ItemStack(Material.AIR));
                     setAir = true;
-                }
-                default -> {
+                default:
                     if (state instanceof Container container) {
 
                         container.getInventory().clear();
                         setAir = true;
                     }
                     if (Tag.DOORS.isTagged(state.getType())) setAir = true;
-                }
             }
 
             if (setAir) {
