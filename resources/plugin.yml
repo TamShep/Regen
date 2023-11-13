@@ -3,8 +3,8 @@ main: ${project.groupId}.${project.artifactId}
 version: ${project.version}
 api-version: ${project.bukkitAPIVersion}
 
-author: ElgarL
-website: http://palmergames.com
+author: TamShep
+website: https://vshepherd.com
 
 description: >
     ${project.description}

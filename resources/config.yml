@@ -7,3 +7,8 @@ delay: 10
 # (How fast the regeneration runs)
 
 frequency: 5
+
+# List of materials to skip during block regeneration
+skipMaterials:
+  - 'FIRE'
+  - 'TNT'
